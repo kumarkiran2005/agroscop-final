@@ -1,0 +1,15 @@
+# AgroScope Backend - deploy on Render
+# Add MONGODB_URI, JWT_SECRET, DEEPSEEK_API_KEY, etc. in Render Dashboard after creation
+services:
+  - type: web
+    name: agroscope-backend
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "20"

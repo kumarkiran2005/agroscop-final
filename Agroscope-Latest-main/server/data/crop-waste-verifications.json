@@ -1,0 +1,14 @@
+[
+  {
+    "_id": "file_1773678476476_h7434mr7z",
+    "userId": "east@argo",
+    "imagePath": "crop-waste-verification/east_argo/1773678476448-MTEwZWUwZTJm.jpg",
+    "image_hash": "110ee0e2f13a15b9c16bc8926d567f795b7575940dc272ed71355743155a2c71",
+    "latitude": 13.027909693886437,
+    "longitude": 80.25754927920102,
+    "captured_at": 1773678476448,
+    "device_id": "web_1773572789056_hn8g5t6cuu",
+    "createdAt": "2026-03-16T16:27:56.476Z",
+    "updatedAt": "2026-03-16T16:27:56.477Z"
+  }
+]

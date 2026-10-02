@@ -1,0 +1,30 @@
+{
+  "//": "Scoped strict check for the Government Schemes feature. tsconfig.app.json sets strict:false repo-wide and only includes src/, so tests/ is never typechecked by it. Do not relax these options to make a check pass.",
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": [
+    "src/types/scheme.ts",
+    "src/lib/eligibility.ts",
+    "src/lib/schemeFilters.ts",
+    "src/lib/schemeFormat.ts",
+    "src/data/schemes.ts",
+    "src/components/schemes/**/*.tsx",
+    "src/pages/Schemes.tsx",
+    "tests/**/*.ts"
+  ]
+}

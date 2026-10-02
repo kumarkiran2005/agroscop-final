@@ -1,0 +1,621 @@
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Leaf, Sparkles, TrendingUp, Upload, BarChart3, Flame, Package, Newspaper, ChevronDown, CloudRain, Phone, Sun, Moon, FolderPlus, DollarSign, Menu, ArrowRight, Snowflake, Satellite, Wallet, Handshake, Scale, Gift, Landmark } from "lucide-react";
+
+/** WhatsApp Support hotline — same as whatsapp sandbox: opens customer care chat with pre-filled message. */
+const SUPPORT_WHATSAPP_URL = "https://wa.me/918617888597?text=" + encodeURIComponent("Hi, I need support from customer care.");
+
+/**
+ * The five residue grades the exchange trades, with the same 30-day supply
+ * figures the Forecast screen serves (server/services/forecastService.js).
+ *
+ * These are the product's own display values, not predictions and not
+ * invented — the hero ledger and /forecast must never disagree. The `code`
+ * is a display abbreviation for the grade column, not a registry identifier.
+ */
+const RESIDUE_GRADES = [
+  { name: "Sugarcane Bagasse", code: "SB", tons: 8.9, confidence: 88 },
+  { name: "Paddy Husk", code: "PH", tons: 5.5, confidence: 85 },
+  { name: "Wheat Straw", code: "WS", tons: 4.2, confidence: 80 },
+  { name: "Corn Stalks", code: "CS", tons: 3.8, confidence: 78 },
+  { name: "Coconut Shells", code: "CH", tons: 2.6, confidence: 75 },
+] as const;
+import { AuthModal } from "@/components/AuthModal";
+import OpeningAnimation from "@/components/OpeningAnimation";
+import GlobalLanguageSelector from "@/components/GlobalLanguageSelector";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useToast } from "@/hooks/use-toast";
+
+const THEME_KEY = "agro-theme";
+import { useWalletOptional } from "@/context/WalletContext";
+import { WalletDropdown } from "@/components/WalletDropdown";
+import { useTranslation } from "@/context/TranslationContext";
+import { motion } from "framer-motion";
+
+/** Catches errors from OpeningAnimation (e.g. R3F/drei) and skips intro so app never fails to load */
+class IntroErrorBoundary extends React.Component<
+  { onError: () => void; children: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError(): { hasError: true } {
+    return { hasError: true };
+  }
+
+  componentDidCatch(): void {
+    this.props.onError();
+  }
+
+  render(): React.ReactNode {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
+
+const Home = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { t } = useTranslation();
+  const [showAnimation, setShowAnimation] = useState(() => {
+    const seen = sessionStorage.getItem("agroScope_intro_seen");
+    return !seen;
+  });
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") return "light";
+    const stored = localStorage.getItem(THEME_KEY) as "light" | "dark" | null;
+    return stored === "light" || stored === "dark" ? stored : "light";
+  });
+
+  const handleAnimationComplete = () => {
+    sessionStorage.setItem("agroScope_intro_seen", "true");
+    setShowAnimation(false);
+  };
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userFirstName, setUserFirstName] = useState("");
+  const [userRole, setUserRole] = useState<"farmer" | "startup" | "admin" | null>(null);
+  const heroRef = useRef<HTMLElement | null>(null);
+  const wallet = useWalletOptional();
+  const walletRef = useRef(wallet);
+  walletRef.current = wallet;
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const today = new Date().toDateString();
+    if (sessionStorage.getItem("agro_last_login_bonus") === today) return;
+    const w = walletRef.current;
+    if (!w) return;
+    w.earn("DAILY_LOGIN").then(() => sessionStorage.setItem("agro_last_login_bonus", today)).catch(() => {});
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const userRaw = localStorage.getItem("user");
+    if (token && userRaw) {
+      try {
+        const user = JSON.parse(userRaw);
+          setIsLoggedIn(true);
+        const nameSource = user.name || user.company_name || user.email || "User";
+        const firstName = String(nameSource).split(" ")[0];
+        setUserFirstName(firstName);
+        setUserRole(user.role === "startup" ? "startup" : user.role === "farmer" ? "farmer" : user.role === "admin" ? "admin" : null);
+      } catch {
+        setIsLoggedIn(false);
+        setUserFirstName("");
+        setUserRole(null);
+      }
+        } else {
+          setIsLoggedIn(false);
+          setUserFirstName("");
+          setUserRole(null);
+        }
+  }, [authModalOpen]);
+
+  const handleAuthSuccess = () => {
+    const token = localStorage.getItem("authToken");
+    const userRaw = localStorage.getItem("user");
+    if (token && userRaw) {
+      try {
+        const user = JSON.parse(userRaw);
+        setIsLoggedIn(true);
+        const nameSource = user.name || user.company_name || user.email || "User";
+        const firstName = String(nameSource).split(" ")[0];
+        setUserFirstName(firstName);
+        const role = user.role === "startup" ? "startup" : user.role === "farmer" ? "farmer" : user.role === "admin" ? "admin" : null;
+        setUserRole(role);
+        if (role === "admin") navigate("/payments");
+      } catch {}
+    }
+  };
+
+  const handleProfileClick = () => {
+    navigate("/profile");
+  };
+
+  useEffect(() => {
+    const stored = localStorage.getItem(THEME_KEY) as "light" | "dark" | null;
+    if (stored === "light" || stored === "dark") setTheme(stored);
+  }, []);
+
+  const setThemeAndApply = (next: "light" | "dark") => {
+    setTheme(next);
+    localStorage.setItem(THEME_KEY, next);
+    document.documentElement.classList.toggle("dark", next === "dark");
+  };
+
+  const toggleTheme = () => {
+    setThemeAndApply(theme === "light" ? "dark" : "light");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    setUserFirstName("");
+    setUserRole(null);
+    toast({ title: t("home_logged_out"), description: t("home_logged_out_desc") });
+    navigate("/home");
+  };
+
+  const handleCTAClick = () => {
+    if (userRole === "farmer") navigate("/input");
+    else if (userRole === "startup") navigate("/startup-input");
+    else if (userRole === "admin") navigate("/payments");
+    else setAuthModalOpen(true);
+  };
+
+  // The pointer-parallax effect that tilted the old hero's 3D background was
+  // removed with that background. Nothing in the new first viewport moves on
+  // pointer position: a ledger that tilts under the cursor reads as a toy.
+
+  return (
+    <>
+      {showAnimation && (
+        <IntroErrorBoundary onError={handleAnimationComplete}>
+          <OpeningAnimation onComplete={handleAnimationComplete} />
+        </IntroErrorBoundary>
+      )}
+      <div
+        style={{
+          opacity: showAnimation ? 0 : 1,
+          transition: "opacity 0.6s ease-in-out",
+          transitionDelay: showAnimation ? "0s" : "0.1s",
+          minHeight: "100vh",
+          width: "100%",
+        }}
+      >
+        <div
+          className="min-h-screen w-full overflow-x-hidden bg-background"
+          style={{ minHeight: "100vh" }}
+        >
+      {/* Header — responsive: mobile menu (Sheet) + desktop nav */}
+      {/* Masthead. Was a translucent blurred bar with a hardcoded near-black
+          dark variant; now an opaque ruled bar that follows the theme. */}
+      <header className="site-nav border-b border-border sticky top-0 z-50 safe-area-inset-top">
+        {/* flex-wrap was unconditional, so the masthead broke onto two rows at
+            common laptop widths. It now only wraps below the md breakpoint,
+            where the actions collapse into the Sheet menu anyway. */}
+        <div className="container mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2 flex-wrap md:flex-nowrap">
+          <button 
+            onClick={() => navigate('/home')}
+            className="site-nav-brand min-h-[44px] touch-manipulation"
+            aria-label="AgroScope — home"
+          >
+            {/* Squared mark. The pill-shaped chip read as a consumer app badge;
+                a trading house stencils its mark, it doesn't bubble it. */}
+            <span className="grid place-items-center bg-primary text-primary-foreground w-7 h-7 rounded-[3px]">
+              <Leaf className="w-[15px] h-[15px]" aria-hidden="true" />
+            </span>
+            <span className="truncate max-w-[150px] sm:max-w-none">AgroScope</span>
+          </button>
+          {/* Desktop nav — hidden on small screens */}
+          <div className="site-nav-actions hidden md:flex items-center gap-2 lg:gap-3">
+            <Button
+              variant="outline"
+              className="border-2 gap-2"
+              onClick={() => window.open(SUPPORT_WHATSAPP_URL, "_blank", "noopener,noreferrer")}
+              type="button"
+            >
+              <Phone className="h-4 w-4" />
+              Support
+            </Button>
+            <Button
+              variant="outline"
+              className="border-2 gap-2"
+              onClick={() => navigate("/schemes")}
+              type="button"
+            >
+              <Landmark className="h-4 w-4" />
+              Schemes
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="border-2 gap-2"
+                >
+                  <Newspaper className="h-4 w-4" />
+                  Live Data
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="min-w-[200px]">
+                <DropdownMenuItem onClick={() => navigate("/agro-news-live")} className="gap-2 cursor-pointer">
+                  <Newspaper className="h-4 w-4" />
+                  Agro News Live
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/weather-forecast")} className="gap-2 cursor-pointer">
+                  <CloudRain className="h-4 w-4" />
+                  Weather Forecast
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/live-prices")} className="gap-2 cursor-pointer">
+                  <DollarSign className="h-4 w-4" />
+                  Live Crop Price
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/verification")} className="gap-2 cursor-pointer">
+                  <FolderPlus className="h-4 w-4" />
+                  Add to Collection
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <GlobalLanguageSelector />
+            {!isLoggedIn ? (
+              <Button
+                variant="outline"
+                onClick={() => setAuthModalOpen(true)}
+                data-primary
+              >
+                {t("nav_login")} / Sign Up
+              </Button>
+            ) : (
+              <>
+                {userRole === "admin" && (
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/payments")}
+                    className="border-2 border-violet-500/50 text-violet-700 dark:text-violet-300"
+                  >
+                    Verify payments
+                  </Button>
+                )}
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/notifications')}
+                  className="border-2 gap-2"
+                >
+                  {t("nav_notifications")}
+                </Button>
+                <WalletDropdown role={userRole} />
+                <Button 
+                  variant="outline" 
+                  onClick={handleProfileClick}
+                  className="border-2"
+                >
+                  {t("nav_profile")} ({userFirstName})
+                </Button>
+              </>
+            )}
+            <Button
+              variant="outline"
+              onClick={toggleTheme}
+              className="border-2 px-3 min-h-[44px] min-w-[44px] touch-manipulation"
+              title="Theme"
+              aria-label="Toggle theme"
+            >
+              {theme === "light" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          {/* Mobile menu — hamburger + sheet */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="md:hidden border-2 min-h-[44px] min-w-[44px] touch-manipulation"
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[min(100vw-2rem,320px)] flex flex-col gap-4 pt-8 safe-area-inset-top">
+              <Button variant="outline" className="justify-start gap-2 border-2 min-h-[48px]" onClick={() => { window.open(SUPPORT_WHATSAPP_URL, "_blank"); }}>
+                <Phone className="h-4 w-4" /> Support
+              </Button>
+              <Button variant="outline" className="justify-start gap-2 border-2 min-h-[48px]" onClick={() => navigate("/schemes")}>
+                <Landmark className="h-4 w-4" /> Schemes
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start gap-2 border-2 min-h-[48px]">
+                    <Newspaper className="h-4 w-4" /> Live Data <ChevronDown className="h-4 w-4 ml-auto" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="min-w-[200px]">
+                  <DropdownMenuItem onClick={() => navigate("/agro-news-live")} className="gap-2 cursor-pointer"><Newspaper className="h-4 w-4" /> Agro News Live</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/weather-forecast")} className="gap-2 cursor-pointer"><CloudRain className="h-4 w-4" /> Weather Forecast</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/live-prices")} className="gap-2 cursor-pointer"><DollarSign className="h-4 w-4" /> Live Crop Price</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/verification")} className="gap-2 cursor-pointer"><FolderPlus className="h-4 w-4" /> Add to Collection</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <GlobalLanguageSelector />
+              {!isLoggedIn ? (
+                <Button variant="outline" className="w-full justify-start border-2 min-h-[48px]" onClick={() => setAuthModalOpen(true)}>{t("nav_login")} / Sign Up</Button>
+              ) : (
+                <>
+                  {userRole === "admin" && (
+                    <Button variant="outline" className="w-full justify-start border-2 border-violet-500/50 min-h-[48px]" onClick={() => navigate("/payments")}>Verify payments</Button>
+                  )}
+                  <Button variant="outline" className="w-full justify-start border-2 min-h-[48px]" onClick={() => navigate("/notifications")}>{t("nav_notifications")}</Button>
+                  <div className="min-h-[48px]"><WalletDropdown role={userRole} /></div>
+                  <Button variant="outline" className="w-full justify-start border-2 min-h-[48px]" onClick={handleProfileClick}>{t("nav_profile")} ({userFirstName})</Button>
+                </>
+              )}
+              <Button variant="outline" className="w-full justify-start gap-2 border-2 min-h-[48px]" onClick={toggleTheme}>
+                {theme === "light" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />} Theme
+              </Button>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </header>
+
+      {/* ── HERO — the exchange floor ─────────────────────────────────
+          The first viewport is the thesis: the mark, the claim, and a
+          ruled ledger of the five grades actually traded. Copy is
+          unchanged from the previous build; only the arrangement and
+          the proof are new. ───────────────────────────────────────── */}
+      <section className="hero-immersive" ref={heroRef}>
+        <div className="hero-shell">
+          {/* ── Claim column ── */}
+          <div className="hero-content">
+            <p className="hero-mark">
+              <b>AgroScope</b>
+              <span>Crop residue exchange · India</span>
+            </p>
+
+            <h1 className="hero-title">
+              {isLoggedIn && userRole === "farmer" && (
+                <span>Your crop residue is a new source of income.</span>
+              )}
+              {isLoggedIn && userRole === "startup" && (
+                <span>Reliable access to agricultural biomass.</span>
+              )}
+              {isLoggedIn && userRole === "admin" && (
+                <span>Powering the agricultural waste economy.</span>
+              )}
+              {!isLoggedIn && (
+                <>
+                  <span>Agricultural waste has value. </span>
+                  <span className="highlight">We help you unlock it.</span>
+                </>
+              )}
+            </h1>
+
+            <p className="hero-lede">
+              {!isLoggedIn && (
+                <>
+                  AgroScope is a digital marketplace that connects farmers with companies that use crop residue for bioenergy,
+                  materials, and industrial production. By turning unused agricultural waste into a tradable resource,
+                  AgroScope helps farmers earn more while reducing environmental waste.
+                </>
+              )}
+              {isLoggedIn && userRole === "farmer" && (
+                <>
+                  List your crop residue, receive demand from verified buyers, and track interest in your listings.
+                  AgroScope connects farmers directly with companies looking for agricultural biomass.
+                </>
+              )}
+              {isLoggedIn && userRole === "startup" && (
+                <>
+                  Discover agricultural residue from farmers across multiple regions. AgroScope helps companies source biomass
+                  efficiently while maintaining transparency in supply and availability.
+                </>
+              )}
+              {isLoggedIn && userRole === "admin" && (
+                <>
+                  Monitor platform activity, manage users, and oversee marketplace operations. The AgroScope admin dashboard
+                  provides full visibility into listings, demand, and transactions.
+                </>
+              )}
+            </p>
+
+            <div className="hero-actions">
+              <button className="hero-cta-main" onClick={handleCTAClick}>
+                <span>
+                  {!isLoggedIn && "Monetize waste"}
+                  {isLoggedIn && userRole === "farmer" && "List a consignment"}
+                  {isLoggedIn && userRole === "startup" && "Source biomass"}
+                  {isLoggedIn && userRole === "admin" && "Open dashboard"}
+                </span>
+                <ArrowRight aria-hidden="true" />
+              </button>
+              <button
+                className="hero-cta-ghost"
+                onClick={() => navigate("/forecast")}
+              >
+                View supply forecast
+              </button>
+            </div>
+
+            <div className="hero-badges">
+              <span>AI-Powered Matching</span>
+              <span>Instant Valuations</span>
+              <span>100% free for farmers</span>
+            </div>
+          </div>
+
+          {/* ── Proof column: the ledger ── */}
+          <aside className="hero-ledger" aria-labelledby="hero-ledger-title">
+            <div className="hero-ledger-head">
+              <h2 id="hero-ledger-title">Traded grades</h2>
+              <time dateTime="P30D">Next 30 days</time>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Grade</th>
+                  <th scope="col" className="num">Supply</th>
+                  <th scope="col" className="num">Confidence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {RESIDUE_GRADES.map((g) => (
+                  <tr key={g.code}>
+                    <th scope="row">
+                      <span className="grade">
+                        <b>{g.name}</b>
+                        <span>{g.code}</span>
+                      </span>
+                    </th>
+                    <td className="num">
+                      {g.tons.toFixed(2)}
+                      <i>t</i>
+                    </td>
+                    <td className="num">
+                      <span className="hero-conf">
+                        <span className="hero-conf-track">
+                          <span
+                            className="hero-conf-fill"
+                            style={{ width: `${g.confidence}%` }}
+                          />
+                        </span>
+                        {g.confidence}
+                        <i>%</i>
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <p className="hero-ledger-foot">
+              Indicative supply forecast · not a firm offer
+            </p>
+          </aside>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section
+        className="py-10 sm:py-16 md:py-20 bg-white dark:bg-card mt-6 sm:mt-10"
+      >
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-foreground mb-3 sm:mb-4 px-2">
+              Why Choose AgroScope?
+            </h2>
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-1">
+              AgroScope bridges the gap between agricultural waste and industrial demand, helping farmers monetize crop residue while providing companies with sustainable biomass resources.
+            </p>
+          </div>
+
+          <div className="agro-carousel overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x">
+            <div className="agro-carousel-track gap-4 sm:gap-6 py-4">
+              {[
+                { icon: <Sparkles className="w-7 h-7 text-primary" />, title: "AI Price Negotiation", desc: "Real-time AI negotiation for crop residue." },
+                { icon: <TrendingUp className="w-7 h-7 text-accent" />, title: "30-Day Forecast", desc: "Supply and demand prediction over 30 days." },
+                { icon: <Snowflake className="w-7 h-7 text-primary" />, title: "Cold Storage Hubs", desc: "Access to cold storage locations across supported cities." },
+                { icon: <Satellite className="w-7 h-7 text-accent" />, title: "Satellite Crop Detection", desc: "Satellite-based area and biomass estimation." },
+                { icon: <Wallet className="w-7 h-7 text-primary" />, title: "AgroCredits & Dual Wallet", desc: "Earn/spend AgroCredits and manage farmer/startup wallets." },
+                { icon: <Handshake className="w-7 h-7 text-accent" />, title: "AI Matchmaking", desc: "Intelligently match buyers and suppliers." },
+                { icon: <Scale className="w-7 h-7 text-primary" />, title: "Smart Weight Estimator", desc: "AI-assisted weight estimation from a single photo." },
+                { icon: <Newspaper className="w-7 h-7 text-accent" />, title: "Agri News Live", desc: "Near real-time agricultural news and signals." },
+                { icon: <Gift className="w-7 h-7 text-primary" />, title: "Loyalty & Rewards", desc: "Loyalty program and rewards mechanics." },
+              ].map((feature, index) => (
+                <motion.div
+                  key={`${feature.title}-${index}`}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{
+                    delay: (index % 9) * 0.04,
+                    duration: 0.55,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  className="w-[280px] sm:w-72 shrink-0 px-2"
+                >
+                  <Card className="border-2 hover:shadow-card transition-all duration-300 hover:scale-[1.02] h-full">
+                    <CardHeader>
+                      <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        {feature.icon}
+                      </div>
+                      <CardTitle className="text-xl">{feature.title}</CardTitle>
+                      <CardDescription className="text-base">
+                        {feature.desc}
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Tools: Forecast, Carbon, Recommendations */}
+          <div className="mt-12 pt-12 border-t border-border">
+            <h3 className="text-lg sm:text-xl font-semibold mb-4 text-center text-foreground">Tools & Insights</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+              <Button
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2"
+                onClick={() => navigate("/forecast")}
+              >
+                <BarChart3 className="w-6 h-6" />
+                <span>{t("nav_forecast")}</span>
+                <span className="text-xs font-normal text-muted-foreground">Supply prediction</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2"
+                onClick={() => navigate("/carbon")}
+              >
+                <Flame className="w-6 h-6" />
+                <span>{t("nav_carbon")}</span>
+                <span className="text-xs font-normal text-muted-foreground">CO₂ impact</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2"
+                onClick={() => navigate("/recommendations")}
+              >
+                <Package className="w-6 h-6" />
+                <span>Recommendations</span>
+                <span className="text-xs font-normal text-muted-foreground">Waste to products</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border py-6 sm:py-8 bg-white dark:bg-card dark:border-neutral-200 safe-area-inset-bottom">
+        <div className="container mx-auto px-4 sm:px-6 text-center text-muted-foreground text-sm sm:text-base">
+          <p>&copy; 2025 AgroScope. Transforming Waste into Value.</p>
+        </div>
+      </footer>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        open={authModalOpen} 
+        onOpenChange={setAuthModalOpen}
+        onAuthSuccess={handleAuthSuccess}
+      />
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Home;

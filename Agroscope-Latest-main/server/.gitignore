@@ -1,0 +1,8 @@
+node_modules/
+.env
+*.log
+.DS_Store
+
+
+# Runtime price cache - regenerated at runtime, not source
+data/live-prices-cache.json

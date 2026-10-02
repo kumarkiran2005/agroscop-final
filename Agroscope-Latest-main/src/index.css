@@ -1,0 +1,1223 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────────────
+   TYPE — three faces, one job each.
+
+   Previously a single display serif (Playfair) was force-applied to every
+   element including buttons, inputs and table figures. A high-contrast
+   display serif has no business setting 12px UI chrome or tabular data:
+   it is the strongest single reason this product read as unserious.
+
+   --font-display : Archivo. The marking voice. Its width axis is what
+                    gives headings the stencilled, struck character.
+   --font-sans    : Public Sans. Interface and body. Survives 12px and
+                    survives machine translation into 50 languages.
+   --font-mono    : JetBrains Mono. ONLY for figures that were counted —
+                    weights, prices, lot numbers, dates. Never decoration.
+   ───────────────────────────────────────────────────────────────────── */
+:root {
+  --font-display: "Archivo", "Public Sans", system-ui, sans-serif;
+  --font-sans: "Public Sans", "Noto Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-stretch: 112%;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+
+/* Any counted figure is set in mono with tabular, slashed-zero figures so
+   columns of weights and prices align on the decimal. */
+.tabular,
+[data-figure],
+td.num,
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  letter-spacing: -0.01em;
+}
+
+/* The stencilled mark: small, wide-tracked, uppercase. This is the world's
+   signature and the ONLY place tracking goes positive. */
+.mark {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Body measure. Long-form copy is capped so lines stay in the 65–75ch band. */
+.measure { max-width: 68ch; }
+.measure-tight { max-width: 54ch; }
+
+/* Mobile / tablet: safe area for notches, touch-friendly */
+.safe-area-inset-top { padding-top: env(safe-area-inset-top, 0); }
+.safe-area-inset-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
+.touch-manipulation { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+@media (max-width: 767px) {
+  .agro-carousel-track { animation: none; }
+  .agro-carousel { -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; }
+  .agro-carousel .agro-carousel-track > * { scroll-snap-align: start; }
+}
+
+/* Hide Google Translate widget and banner - we use our own language selector */
+#google_translate_element,
+.goog-te-banner-frame.skiptranslate,
+body > .skiptranslate,
+iframe.skiptranslate { display: none !important; }
+body { top: 0 !important; }
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* ── LIGHT is the default, and that is a scene decision, not a taste one.
+       The farmer using this is outdoors in Indian daylight on a phone. A
+       near-black UI is unreadable there. The buyer at a desk loses nothing. ── */
+
+    /* Ground: working paper. Warm-neutral with a green cast — the stock a
+       weighbridge ticket is printed on. Deliberately not cream. */
+    --background: 45 14% 95%;
+    --foreground: 158 22% 10%;
+    --card: 42 22% 98%;
+    --card-foreground: 158 22% 10%;
+    --popover: 42 22% 98%;
+    --popover-foreground: 158 22% 10%;
+
+    /* Cargo green. Deep and desaturated — the ink a trading house stencils
+       with. The old 142 71% 45% was a signal green at full saturation. */
+    --primary: 158 44% 21%;
+    --primary-foreground: 45 30% 97%;
+    --secondary: 45 12% 89%;
+    --secondary-foreground: 158 22% 14%;
+    --muted: 45 12% 90%;
+    --muted-foreground: 158 11% 36%;
+
+    /* Ochre is reserved for measurement — weights, capacities, gauges.
+       It is never decorative. */
+    --accent: 32 66% 42%;
+    --accent-foreground: 45 30% 97%;
+    --destructive: 6 58% 42%;
+    --destructive-foreground: 45 30% 97%;
+    --success: 158 44% 28%;
+    --warning: 32 66% 42%;
+
+    /* Hairlines. A ledger is ruled, so borders carry real structural weight
+       here and shadows carry almost none. */
+    --border: 45 12% 84%;
+    --input: 45 12% 80%;
+    --ring: 158 44% 21%;
+
+    /* Chart series derived from the world, not a rainbow. */
+    --chart-1: 158 44% 21%;
+    --chart-2: 32 66% 42%;
+    --chart-3: 197 30% 34%;
+    --chart-4: 6 52% 44%;
+    --chart-5: 158 10% 46%;
+
+    /* 4px. A ledger has corners; the 8px pill read as a template. */
+    --radius: 0.25rem;
+
+    /* Elevation: real shadows — vertical offset plus soft blur, tinted with
+       the ink hue. Replaces the zero-offset colored halos, which were
+       decoration rather than depth. */
+    --shadow-xs: 0 1px 2px -1px hsl(158 22% 10% / 0.10);
+    --shadow-sm: 0 1px 3px -1px hsl(158 22% 10% / 0.10), 0 2px 8px -4px hsl(158 22% 10% / 0.08);
+    --shadow-md: 0 2px 6px -2px hsl(158 22% 10% / 0.10), 0 8px 20px -8px hsl(158 22% 10% / 0.12);
+    --shadow-lg: 0 4px 10px -3px hsl(158 22% 10% / 0.10), 0 18px 40px -14px hsl(158 22% 10% / 0.16);
+
+    /* Kept as aliases so existing consumers of the old names don't break. */
+    --shadow-elegant: var(--shadow-lg);
+    --shadow-card: var(--shadow-sm);
+    --gradient-primary: none;
+    --gradient-hero: none;
+    --gradient-overlay: none;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Hero reference variables */
+    --green-soft: #50ff93;
+    --green-main: #16c76b;
+    --green-deep: #0a9b4a;
+    --green-dark: #037235;
+    --text-primary-hero: #ffffff;
+    --text-muted-hero: #d3ffe8;
+    --accent-gold: #ffd36b;
+    --accent-blue: #4fd3ff;
+  }
+
+  .dark {
+    /* The same ledger under lamplight. Green-black, not slate-blue: the old
+       dark theme's #020617 body was a cool blue fighting a green token set. */
+    --background: 158 20% 7%;
+    --foreground: 45 18% 92%;
+    --card: 158 17% 10%;
+    --card-foreground: 45 18% 92%;
+    --popover: 158 17% 11%;
+    --popover-foreground: 45 18% 92%;
+
+    /* Lifted off the light-mode value so it clears 4.5:1 on the dark ground —
+       the deep cargo green is unreadable here. */
+    --primary: 158 38% 46%;
+    --primary-foreground: 158 30% 6%;
+    --secondary: 158 14% 16%;
+    --secondary-foreground: 45 18% 92%;
+    --muted: 158 14% 15%;
+    --muted-foreground: 150 9% 63%;
+    --accent: 36 70% 55%;
+    --accent-foreground: 158 30% 8%;
+    --destructive: 6 56% 50%;
+    --destructive-foreground: 45 30% 97%;
+    --success: 158 38% 46%;
+    --warning: 36 70% 55%;
+
+    --border: 158 12% 19%;
+    --input: 158 12% 22%;
+    --ring: 158 38% 46%;
+
+    --chart-1: 158 38% 46%;
+    --chart-2: 36 70% 55%;
+    --chart-3: 197 34% 52%;
+    --chart-4: 6 56% 55%;
+    --chart-5: 150 9% 58%;
+
+    /* Depth on a dark ground comes from the surface stepping up, not from a
+       heavier shadow — so these stay restrained and the card lightens. */
+    --shadow-xs: 0 1px 2px -1px hsl(0 0% 0% / 0.40);
+    --shadow-sm: 0 1px 3px -1px hsl(0 0% 0% / 0.44), 0 2px 8px -4px hsl(0 0% 0% / 0.36);
+    --shadow-md: 0 2px 6px -2px hsl(0 0% 0% / 0.46), 0 8px 20px -8px hsl(0 0% 0% / 0.44);
+    --shadow-lg: 0 4px 10px -3px hsl(0 0% 0% / 0.48), 0 18px 40px -14px hsl(0 0% 0% / 0.52);
+    --shadow-elegant: var(--shadow-lg);
+    --shadow-card: var(--shadow-sm);
+    --gradient-primary: none;
+    --gradient-hero: none;
+    --gradient-overlay: none;
+  }
+}
+
+/* Language-specific fonts for full-site translation (Noto Sans) */
+:root { font-family: var(--font-sans); }
+:lang(hi), :lang(mr), :lang(sa), :lang(mai) { font-family: 'Noto Sans Devanagari', 'Noto Sans', sans-serif; }
+:lang(ta) { font-family: 'Noto Sans Tamil', 'Noto Sans', sans-serif; }
+:lang(te) { font-family: 'Noto Sans Telugu', 'Noto Sans', sans-serif; }
+:lang(kn) { font-family: 'Noto Sans Kannada', 'Noto Sans', sans-serif; }
+:lang(ml) { font-family: 'Noto Sans Malayalam', 'Noto Sans', sans-serif; }
+:lang(bn) { font-family: 'Noto Sans Bengali', 'Noto Sans', sans-serif; }
+:lang(gu) { font-family: 'Noto Sans Gujarati', 'Noto Sans', sans-serif; }
+:lang(pa) { font-family: 'Noto Sans Gurmukhi', 'Noto Sans', sans-serif; }
+:lang(ar), :lang(ur) { font-family: 'Noto Sans Arabic', 'Noto Sans', sans-serif; }
+:lang(he) { font-family: 'Noto Sans Hebrew', 'Noto Sans', sans-serif; }
+:lang(zh) { font-family: 'Noto Sans SC', 'Noto Sans', sans-serif; }
+:lang(ja) { font-family: 'Noto Sans JP', 'Noto Sans', sans-serif; }
+:lang(ko) { font-family: 'Noto Sans KR', 'Noto Sans', sans-serif; }
+[dir="rtl"] { font-family: 'Noto Sans Arabic', 'Noto Sans', system-ui, sans-serif; }
+
+/* ─────────────────────────────────────────────────────────────────────
+   LEGACY ALIAS LAYER
+
+   The project carried a second, competing palette here: ~40 hardcoded
+   dark-mode hex values (--bg-void, --green-mid, --glow-green-lg …) that
+   disagreed with the shadcn token set above. Components picked from
+   whichever they happened to reach for, which is why the surface never
+   looked like one system.
+
+   These names are consumed in ~130 places, so they are remapped rather
+   than removed. Every one now derives from the semantic tokens, which
+   means they follow the theme instead of forcing dark, and they adopt the
+   commodity-house palette without touching a single component file.
+
+   New work should use the semantic tokens directly.
+   ───────────────────────────────────────────────────────────────────── */
+:root {
+  /* Surfaces — step up from the ground rather than glowing. */
+  --bg-void:      hsl(var(--background));
+  --bg-deep:      hsl(var(--background));
+  --bg-surface:   hsl(var(--card));
+  --bg-raised:    hsl(var(--card));
+  --bg-overlay:   hsl(var(--popover));
+
+  /* Cargo green ramp. */
+  --green-dim:    hsl(var(--muted));
+  --green-muted:  hsl(var(--primary) / 0.55);
+  --green-mid:    hsl(var(--primary));
+  --green-base:   hsl(var(--primary));
+  --green-bright: hsl(var(--primary));
+  --green-text:   hsl(var(--primary));
+  --green-glow:   hsl(var(--primary));
+  --crop-green:   hsl(var(--primary));
+
+  /* Ochre — measurement only. */
+  --gold-deep:    hsl(var(--accent) / 0.65);
+  --gold-mid:     hsl(var(--accent));
+  --gold-bright:  hsl(var(--accent));
+  --gold-text:    hsl(var(--accent));
+
+  /* Text hierarchy, contrast-checked in both themes. */
+  --text-primary:   hsl(var(--foreground));
+  --text-secondary: hsl(var(--muted-foreground));
+  --text-muted:     hsl(var(--muted-foreground));
+  --text-ghost:     hsl(var(--muted-foreground) / 0.6);
+
+  /* Ruled hairlines. */
+  --border-dim:     hsl(var(--border) / 0.6);
+  --border-soft:    hsl(var(--border));
+  --border-mid:     hsl(var(--border));
+  --border-bright:  hsl(var(--primary) / 0.5);
+
+  /* Glow tokens are retired. A zero-offset colored halo is decoration, not
+     depth — it was the single loudest "generated" tell on the surface.
+     The names survive so nothing breaks; they now resolve to real
+     directional shadows. */
+  --glow-green-sm:  var(--shadow-xs);
+  --glow-green-md:  var(--shadow-sm);
+  --glow-green-lg:  var(--shadow-md);
+  --glow-gold-sm:   var(--shadow-xs);
+
+  /* Radii pulled in hard. 28px on a data panel is a consumer-app tell. */
+  --r-sm:   3px;
+  --r-md:   4px;
+  --r-lg:   6px;
+  --r-xl:   8px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-void); }
+::-webkit-scrollbar-thumb {
+  background: var(--green-dim);
+  border-radius: 3px;
+}
+
+/* Text selection */
+::selection {
+  background: rgba(82, 183, 136, 0.25);
+  color: var(--text-primary);
+}
+
+/* Animations */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%     { opacity: 0.4; transform: scale(0.85); }
+}
+@keyframes glow-pulse {
+  0%,100% { box-shadow: 0 0 10px rgba(64,145,108,0.3); }
+  50%     { box-shadow: 0 0 25px rgba(64,145,108,0.6); }
+}
+@keyframes scan-line {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes heroLightSweep {
+  0%   { transform: translate3d(-6%, 0, 0) skewX(-4deg); }
+  50%  { transform: translate3d(6%, -2%, 0) skewX(3deg); }
+  100% { transform: translate3d(-6%, 0, 0) skewX(-4deg); }
+}
+
+@keyframes heroRingSpin {
+  0% {
+    transform: translate3d(-50%, -50%, 60px) rotateX(68deg) rotateZ(0deg);
+  }
+  100% {
+    transform: translate3d(-50%, -50%, 60px) rotateX(68deg) rotateZ(360deg);
+  }
+}
+
+@keyframes heroRingSpinReverse {
+  0% {
+    transform: translate3d(-50%, -50%, -40px) rotateX(72deg) rotateZ(0deg);
+  }
+  100% {
+    transform: translate3d(-50%, -50%, -40px) rotateX(72deg) rotateZ(-360deg);
+  }
+}
+
+@keyframes heroCardSweep {
+  0%   { opacity: 0; transform: translateX(-40%); }
+  30%  { opacity: 0.95; }
+  60%  { opacity: 0; transform: translateX(40%); }
+  100% { opacity: 0; transform: translateX(40%); }
+}
+
+@keyframes heroCardFloatLeft {
+  0% {
+    transform: translate3d(-380px, 0, 40px) rotateY(-18deg) rotateX(14deg);
+  }
+  50% {
+    transform: translate3d(-390px, -14px, 55px) rotateY(-14deg) rotateX(18deg);
+  }
+  100% {
+    transform: translate3d(-380px, 0, 40px) rotateY(-18deg) rotateX(14deg);
+  }
+}
+
+@keyframes heroCardFloatRight {
+  0% {
+    transform: translate3d(160px, 40px, 40px) rotateY(22deg) rotateX(-10deg);
+  }
+  50% {
+    transform: translate3d(172px, 26px, 55px) rotateY(18deg) rotateX(-6deg);
+  }
+  100% {
+    transform: translate3d(160px, 40px, 40px) rotateY(22deg) rotateX(-10deg);
+  }
+}
+
+@keyframes heroParticleFloat {
+  0%   { transform: translate3d(0,0,0) scale(0.7); opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { transform: translate3d(-12px,-40px,80px) scale(1.3); }
+  100% { transform: translate3d(10px,-90px,120px) scale(0.8); opacity: 0; }
+}
+
+@keyframes heroCtaGlow {
+  0%   { opacity: 0; transform: translateX(-40%); }
+  40%  { opacity: 1; }
+  80%  { opacity: 0; transform: translateX(40%); }
+  100% { opacity: 0; transform: translateX(40%); }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    /* was hardcoded #020617 — a slate-blue that no token in the system
+       agreed with. Now follows the theme. */
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
+  /* Keyboard focus was invisible across the whole app. This is the one
+     ring, drawn outside the element so it never shifts layout. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  :focus:not(:focus-visible) { outline: none; }
+
+  /* Any figure the product counted aligns on its decimal. */
+  input[type="number"],
+  time,
+  output {
+    font-variant-numeric: tabular-nums slashed-zero;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Global micro-animations and interaction styles */
+
+.page-transition {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.page-transition.loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── BUTTONS ──────────────────────────────────────────────────────────
+   A bare `button` element selector used to give EVERY button in the app
+   an 8px radius, a drop shadow, a -1px lift on hover and a 0.97 scale on
+   press — including icon buttons, dropdown triggers, table controls and
+   the wordmark. That is the "everything floats and jiggles" tell, and
+   because it targeted the element it fought every shadcn variant.
+
+   Its focus style was worse: it removed the outline and replaced it with
+   a BLUE ring (rgba(80,120,255,…)) that appears in no other part of this
+   product's palette.
+
+   The bare selector now only carries the cursor and font inheritance a
+   button actually needs. Visual treatment is opt-in via .btn or the
+   shadcn variants, and focus is handled once by the :focus-visible rule
+   in the base layer.
+   ─────────────────────────────────────────────────────────────────── */
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.125rem;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: background-color 130ms ease, border-color 130ms ease, box-shadow 130ms ease;
+}
+
+.btn:hover {
+  background: hsl(var(--secondary));
+  border-color: hsl(var(--foreground) / 0.24);
+}
+
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.btn[data-variant="primary"] {
+  background: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-weight: 600;
+}
+
+.btn[data-variant="primary"]:hover {
+  background: hsl(var(--primary) / 0.9);
+  border-color: hsl(var(--primary) / 0.9);
+}
+
+.card,
+.dashboard-card,
+.panel {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+/* Cards no longer levitate 3px on hover. A panel of figures is not a
+   button; lifting it on pointer-over suggests an affordance that isn't
+   there. Hover now reads as a quiet surface change, and only where the
+   card is genuinely interactive. */
+.card:hover,
+.dashboard-card:hover,
+.panel:hover {
+  border-color: hsl(var(--foreground) / 0.2);
+}
+
+/* Links dimmed to 80% opacity on hover, which washes out the text rather
+   than emphasising it. Underline is the honest affordance. */
+a {
+  transition: color 120ms ease, text-decoration-color 120ms ease;
+}
+
+a:hover {
+  text-decoration-line: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 400ms ease,
+    transform 400ms ease;
+}
+
+.reveal.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.img-fade {
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.img-fade.loaded {
+  opacity: 1;
+}
+
+/* ── NAVIGATION ───────────────────────────────────────────────────────
+   Every action in this bar used to be a filled primary button — eight
+   identical dark-green pills competing for the same attention, which is
+   why the header read as a toolbar rather than a masthead.
+
+   Now the bar is quiet by default and exactly one action can be filled:
+   whichever one is marked data-primary. Hierarchy comes from the bar,
+   not from each button shouting.
+   ─────────────────────────────────────────────────────────────────── */
+
+.site-nav {
+  background: hsl(var(--background));
+  border-bottom: 1px solid hsl(var(--border));
+  backdrop-filter: none;
+}
+
+.site-nav .site-nav-actions button {
+  background-color: transparent;
+  color: hsl(var(--foreground));
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  box-shadow: none;
+  transition: background-color 130ms ease, border-color 130ms ease, color 130ms ease;
+}
+
+.site-nav .site-nav-actions button:hover {
+  background-color: hsl(var(--secondary));
+  border-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+  opacity: 1;
+}
+
+.site-nav .site-nav-actions button:active {
+  background-color: hsl(var(--secondary));
+  opacity: 1;
+}
+
+/* The one filled action. */
+.site-nav .site-nav-actions button[data-primary] {
+  background-color: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-weight: 600;
+}
+
+.site-nav .site-nav-actions button[data-primary]:hover {
+  background-color: hsl(var(--primary) / 0.9);
+  border-color: hsl(var(--primary) / 0.9);
+}
+
+/* Wordmark: set in the display face, not boxed on a white chip. */
+.site-nav .site-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5625rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-stretch: 112%;
+  font-size: 1.0625rem;
+  letter-spacing: -0.02em;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+}
+
+.site-nav .site-nav-brand:hover {
+  color: hsl(var(--primary));
+}
+
+/* Infinite feature carousel */
+@keyframes agro-carousel-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.agro-carousel-track {
+  display: flex;
+  width: max-content;
+  animation: agro-carousel-scroll 45s linear infinite;
+}
+
+.agro-carousel:hover .agro-carousel-track {
+  animation-play-state: paused;
+}
+
+/* Hero immersive — full screen */
+/* ═══════════════════════════════════════════════════════════════════════
+   HERO — THE EXCHANGE FLOOR
+
+   What was here: a full-bleed saturated-green gradient, two counter-
+   rotating 3D rings, two floating glass cards, and seven animated
+   particles — roughly 340 lines of decoration, none of which showed the
+   product doing its job. It was the loudest "generated" signature on the
+   surface, and it sat on hardcoded hex that no token agreed with.
+
+   What replaces it: the first viewport as a thesis. The mark, the claim,
+   and a ruled ledger of the five residue grades the exchange actually
+   trades — the same display values the Forecast screen already serves.
+   The primary action sits inside the ledger's frame rather than floating
+   above a gradient, because on a trading surface the action belongs to
+   the instrument.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.hero-immersive {
+  position: relative;
+  width: 100%;
+  background: hsl(var(--background));
+  border-bottom: 1px solid hsl(var(--border));
+  padding: clamp(2.5rem, 6vw, 5.5rem) 0 0;
+  overflow: hidden;
+}
+
+/* Ledger paper: four faint vertical rules. The ground is ruled, not lit. */
+.hero-immersive::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    to right,
+    hsl(var(--border) / 0.6) 1px,
+    transparent 1px
+  );
+  background-size: 25% 100%;
+  pointer-events: none;
+}
+
+.hero-shell {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: start;
+}
+
+/* ── The stencilled mark ─────────────────────────────────────────────── */
+
+.hero-mark {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.hero-mark::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: hsl(var(--border));
+}
+
+.hero-mark b {
+  font-weight: 700;
+  color: hsl(var(--primary));
+}
+
+/* ── The claim ───────────────────────────────────────────────────────── */
+
+.hero-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 118%;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+  color: hsl(var(--foreground));
+  text-wrap: balance;
+  margin: 0 0 clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+/* Emphasis by weight and color, never by gradient fill. */
+.hero-title .highlight {
+  color: hsl(var(--primary));
+}
+
+.hero-lede {
+  max-width: 54ch;
+  font-size: clamp(0.9375rem, 1.15vw, 1.0625rem);
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+  margin: 0 0 clamp(1.75rem, 3vw, 2.5rem);
+  text-wrap: pretty;
+}
+
+/* ── Action ──────────────────────────────────────────────────────────── */
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.875rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+.hero-cta-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1.5rem;
+  border: 1px solid hsl(var(--primary));
+  border-radius: var(--radius);
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: background 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.hero-cta-main:hover {
+  background: hsl(var(--primary) / 0.9);
+  box-shadow: var(--shadow-sm);
+}
+
+.hero-cta-main:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.hero-cta-main svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-cta-main:hover svg {
+  transform: translateX(3px);
+}
+
+.hero-cta-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: transparent;
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.hero-cta-ghost:hover {
+  background: hsl(var(--secondary));
+  border-color: hsl(var(--foreground) / 0.28);
+}
+
+/* ── Trust line ──────────────────────────────────────────────────────── */
+
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid hsl(var(--border));
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.hero-badges span {
+  position: relative;
+  padding: 0.375rem 0;
+}
+
+/* ── The ledger — the proof ──────────────────────────────────────────── */
+
+.hero-ledger {
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--card));
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.hero-ledger-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--secondary) / 0.5);
+}
+
+.hero-ledger-head h2 {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground));
+}
+
+.hero-ledger-head time {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: hsl(var(--muted-foreground));
+}
+
+.hero-ledger table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.hero-ledger thead th {
+  padding: 0.625rem 1.25rem;
+  border-bottom: 1px solid hsl(var(--border));
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  text-align: left;
+}
+
+.hero-ledger thead th.num,
+.hero-ledger tbody td.num {
+  text-align: right;
+}
+
+.hero-ledger tbody td,
+.hero-ledger tbody th {
+  padding: 0.8125rem 1.25rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.7);
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: hsl(var(--foreground));
+  text-align: left;
+  vertical-align: middle;
+}
+
+.hero-ledger tbody tr:last-child td,
+.hero-ledger tbody tr:last-child th {
+  border-bottom: 0;
+}
+
+.hero-ledger tbody tr {
+  transition: background 120ms ease;
+}
+
+.hero-ledger tbody tr:hover {
+  background: hsl(var(--secondary) / 0.45);
+}
+
+/* Grade name carries a lot code, the way a traded good does. */
+.hero-ledger .grade {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem;
+}
+
+.hero-ledger .grade b {
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.hero-ledger .grade span {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  color: hsl(var(--muted-foreground));
+}
+
+.hero-ledger td.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  font-size: 0.875rem;
+  letter-spacing: -0.01em;
+}
+
+.hero-ledger td.num i {
+  font-style: normal;
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  margin-left: 0.1875rem;
+}
+
+/* Confidence reads as a measured bar. Ochre is the measurement ink. */
+.hero-conf {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.hero-conf-track {
+  width: 42px;
+  height: 3px;
+  border-radius: 1px;
+  background: hsl(var(--border));
+  overflow: hidden;
+}
+
+.hero-conf-fill {
+  display: block;
+  height: 100%;
+  background: hsl(var(--accent));
+}
+
+.hero-ledger-foot {
+  padding: 0.8125rem 1.25rem;
+  border-top: 1px solid hsl(var(--border));
+  background: hsl(var(--secondary) / 0.5);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .hero-shell {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+  .hero-immersive::before {
+    background-size: 50% 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-immersive {
+    padding-top: 2rem;
+  }
+  .hero-title {
+    font-size: clamp(2rem, 9vw, 2.75rem);
+    letter-spacing: -0.03em;
+  }
+  .hero-badges {
+    gap: 0 1.125rem;
+    font-size: 0.625rem;
+  }
+  .hero-cta-main,
+  .hero-cta-ghost {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  .hero-ledger thead th,
+  .hero-ledger tbody td,
+  .hero-ledger-head,
+  .hero-ledger-foot {
+    padding-inline: 0.875rem;
+  }
+  /* The confidence bar is redundant next to its own number on a phone. */
+  .hero-conf-track {
+    display: none;
+  }
+}
+
+@keyframes agro-fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes agro-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Typing indicator. Was a 5px vertical hop per dot; now the dots fade in
+   sequence — same "thinking" read, without the bouncing. */
+@keyframes agro-typing {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes agro-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(34, 197, 94, 0.7);
+  }
+}
+
+@keyframes agro-countUp {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.agro-message-enter {
+  animation: agro-fadeUp 0.28s ease-out;
+}
+
+.agro-live-dot {
+  animation: agro-pulse 2s ease-in-out infinite;
+}
+
+.agro-typing-dot {
+  animation: agro-typing 1.2s ease-in-out infinite;
+}
+
+.agro-typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.agro-typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.agro-accept-pulse {
+  animation: agro-glow 1.5s ease-in-out infinite;
+}
+
+/* Was an overshoot curve. A price settling past its value and springing
+   back reads as a toy; money decelerates, it does not rebound.
+   Exponential ease-out instead. */
+.agro-price-value {
+  animation: agro-countUp 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Animating `width` re-runs layout every frame. transform: scaleX on a
+   left-anchored fill gets the same read on the compositor. */
+.agro-gauge-fill {
+  transform-origin: left center;
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Negotiation Arena — cinematic $100K design (Bebas Neue, DM Sans, JetBrains Mono loaded in index.html) */
+.negotiation-arena {
+  --void: #020805;
+  --field: #0a1a0f;
+  --crop-green: #00ff7f;
+  --harvest: #f5a623;
+  --danger: #ff4444;
+  --safe: #00ff7f;
+  --neutral: #a0aec0;
+  --text-primary: #f7fafc;
+  --text-muted: #4a5568;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+.negotiation-arena .font-display {
+  font-family: 'Bebas Neue', sans-serif;
+}
+
+.negotiation-arena .font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+@keyframes arena-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.arena-live-dot {
+  animation: arena-pulse 2s ease-in-out infinite;
+}
+
+@keyframes arena-typing {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+
+.arena-typing-dot {
+  animation: arena-typing 1.2s ease-in-out infinite;
+}
+
+.arena-typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.arena-typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+.arena-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+}
